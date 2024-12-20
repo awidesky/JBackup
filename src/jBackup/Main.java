@@ -50,6 +50,9 @@ public class Main {
 	public static File getListFile() {
 		return listFile;
 	}
+	public static int getMaxSnapshots() {
+		return maxSnapshots;
+	}
 	public static File getBackupDir() {
 		return backupDir;
 	}
@@ -128,19 +131,7 @@ public class Main {
 		Worker.work(() -> {
 			while(Arrays.stream(backupDir.listFiles()).filter(File::isDirectory).count() > maxSnapshots) {
 				try {
-					Files.walkFileTree(new File(backupDir, getOldestBackupDate()).toPath(), new SimpleFileVisitor<Path>() {
-						        @Override
-						        public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
-						            Files.delete(dir);
-						            return FileVisitResult.CONTINUE;
-						        }
-						        
-						        @Override
-						        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-						            Files.delete(file);
-						            return FileVisitResult.CONTINUE;
-						        }
-						    });
+					removeDir(new File(backupDir, getOldestBackupDate()));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -149,7 +140,22 @@ public class Main {
 		});
 	}
 	
-	private static class PathPair {
+	public static void removeDir(File dir) throws IOException {
+		Files.walkFileTree(dir.toPath(), new SimpleFileVisitor<Path>() {
+	        @Override
+	        public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
+	            Files.delete(dir);
+	            return FileVisitResult.CONTINUE;
+	        }
+	        
+	        @Override
+	        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+	            Files.delete(file);
+	            return FileVisitResult.CONTINUE;
+	        }
+	    });
+	}
+private static class PathPair {
 		Path source;
 		Path target;
 		public PathPair(Path source, Path target) {
@@ -294,9 +300,7 @@ public class Main {
 		return dateFormat.format(date);
 	}
 	private static Stream<Date> getBackupDates() {
-		return Arrays.stream(backupDir.listFiles())
-				.filter(File::isDirectory)
-				.map(File::getName)
+		return getBackupDateString()
 				.map(s -> {
 					try {
 						return dateFormat.parse(s);
@@ -307,6 +311,19 @@ public class Main {
 					}
 				})
 				.filter(Objects::nonNull);
+	}
+	public static Stream<String> getBackupDateString() {
+		return Arrays.stream(backupDir.listFiles())
+				.filter(File::isDirectory)
+				.map(File::getName)
+				.filter(s -> {
+					try {
+						dateFormat.parse(s);
+						return true;
+					} catch (ParseException e) {
+						return false;
+					}
+				});
 	}
 
 }
