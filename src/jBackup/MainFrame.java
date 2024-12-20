@@ -2,7 +2,6 @@ package jBackup;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -17,6 +16,7 @@ import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -30,12 +30,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -59,7 +58,7 @@ public class MainFrame extends JFrame {
 	private JTextField snapshot = new JTextField(5);
 	private JComboBox<String> cb_snapshotSelect = new JComboBox<String>();
 	private DefaultComboBoxModel<String> cb_model = (DefaultComboBoxModel<String>)cb_snapshotSelect.getModel();
-	private Vector<Vector<String>> backupListVector = new Vector<>();
+	private Vector<String> backupListVector = new Vector<>();
 	
 	public MainFrame() {
         setLocationByPlatform(true);
@@ -143,16 +142,16 @@ public class MainFrame extends JFrame {
         snapshotSelect.add(remove);
         p.add(snapshotSelect, gbc);
         p.add(Box.createVerticalStrut(10), gbc);
+        p.add(new JLabel("Backuped files list :"), gbc);
         
         JPanel tablePanel = new JPanel(new BorderLayout());
-        DefaultTableModel model = new DefaultTableModel(new String[] {"Backuped files list"}, 0);
-        for(Vector<String> v : backupListVector) model.addRow(v);
-        backupListVector.forEach(System.out::println);
-		JTable table = new JTable(model);
+        DefaultListModel<String> model = new DefaultListModel<>();
+        for(String s : backupListVector) model.addElement(s);
+        JList<String> list = new JList<>(model);
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		
-		//JList<String> list = new JList<>();
-		tablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
-		tablePanel.setPreferredSize(new Dimension(500, 300)); 
+		tablePanel.add(new JScrollPane(list), BorderLayout.CENTER);
+		//tablePanel.setPreferredSize(new Dimension(500, 300)); 
 		p.add(tablePanel);
         
         
@@ -168,11 +167,7 @@ public class MainFrame extends JFrame {
 	    Main.getBackupDateString().forEach(cb_model::addElement);
 	    
 	    backupListVector.clear();
-	    list.stream().map(File::getAbsolutePath).map(s -> {
-	    	Vector<String> ret = new Vector<>();
-	    	ret.add(s);
-	    	return ret;
-	    }).forEach(backupListVector::add);
+	    list.stream().map(File::getAbsolutePath).forEach(backupListVector::add);
 	        
 		backupStatusTreeRoot = new DefaultMutableTreeNode("(root)");
 		backupStatusTreeModel = new DefaultTreeModel(backupStatusTreeRoot);
