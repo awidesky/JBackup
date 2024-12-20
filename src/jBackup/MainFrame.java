@@ -3,8 +3,6 @@ package jBackup;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -12,9 +10,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.Stack;
-import java.util.Vector;
 
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -29,8 +27,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
@@ -50,7 +48,6 @@ public class MainFrame extends JFrame {
 	private DefaultMutableTreeNode backupStatusTreeRoot;
 	private DefaultTreeModel backupStatusTreeModel;
 	private JTree backupStatusTree = new JTree();
-	private JTextArea backupList = new JTextArea();
 	
 	private JMenuBar menuBar;
 
@@ -58,7 +55,7 @@ public class MainFrame extends JFrame {
 	private JTextField snapshot = new JTextField(5);
 	private JComboBox<String> cb_snapshotSelect = new JComboBox<String>();
 	private DefaultComboBoxModel<String> cb_model = (DefaultComboBoxModel<String>)cb_snapshotSelect.getModel();
-	private Vector<String> backupListVector = new Vector<>();
+	private DefaultListModel<String> listModel = new DefaultListModel<>();
 	
 	public MainFrame() {
         setLocationByPlatform(true);
@@ -68,7 +65,6 @@ public class MainFrame extends JFrame {
         
         Main.load(list, Main.getListFile());
         setTitle("Backup : " + Main.getListFile().getName());
-        backupList.setEditable(false);
         
 		backupStatusTree.setShowsRootHandles(false);
 		updateBackupList();
@@ -100,30 +96,25 @@ public class MainFrame extends JFrame {
 	}
 	
 	private JPanel getSummaryPanel() {
-		JPanel p = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
+		JPanel p = new JPanel();
+		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
 
         JPanel backupDest = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton browse = new JButton("Browse");
         browse.addActionListener(e -> setBackupDir());
         backupDest.add(backupDestLabel);
         backupDest.add(browse);
-        p.add(backupDest, gbc);
+        p.add(backupDest);
         
         JPanel snapshots = new JPanel(new FlowLayout(FlowLayout.LEFT));
         snapshots.add(new JLabel("Maximum number of snapshots : "));
         snapshot.setText("" + Main.getMaxSnapshots());
         snapshots.add(snapshot);
-        p.add(snapshots, gbc);
+        p.add(snapshots);
 		
         JPanel snapshotSelect = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton remove = new JButton("remove");
-        remove.addActionListener(e -> {
+        JButton remove_snapshot = new JButton("remove");
+        remove_snapshot.addActionListener(e -> {
         	String selected = (String)cb_model.getSelectedItem();
         	File dir = new File(Main.getBackupDir(), selected);
         	if(JOptionPane.showConfirmDialog(null, "Remove backup snapshot %s?\nLocation : %s".formatted(selected, dir.getAbsolutePath()),
@@ -139,36 +130,41 @@ public class MainFrame extends JFrame {
         });
         snapshotSelect.add(new JLabel("Choose snapshot : "));
         snapshotSelect.add(cb_snapshotSelect);
-        snapshotSelect.add(remove);
-        p.add(snapshotSelect, gbc);
-        p.add(Box.createVerticalStrut(10), gbc);
-        p.add(new JLabel("Backuped files list :"), gbc);
+        snapshotSelect.add(remove_snapshot);
+        p.add(snapshotSelect);
+        p.add(Box.createVerticalStrut(10));
+        p.add(new JSeparator());
         
-        JPanel tablePanel = new JPanel(new BorderLayout());
-        DefaultListModel<String> model = new DefaultListModel<>();
-        for(String s : backupListVector) model.addElement(s);
-        JList<String> list = new JList<>(model);
+        JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        labelPanel.add(new JLabel("Backuped files list"));
+        JButton remove_list = new JButton("remove selected");
+        labelPanel.add(remove_list);
+        p.add(labelPanel);
+        
+        JPanel listPanel = new JPanel(new BorderLayout());
+        JList<String> list = new JList<>(listModel);
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		
-		tablePanel.add(new JScrollPane(list), BorderLayout.CENTER);
-		//tablePanel.setPreferredSize(new Dimension(500, 300)); 
-		p.add(tablePanel);
+        remove_list.addActionListener(e ->{
+        	int[] arr = list.getSelectedIndices();
+        	for(int i = arr.length - 1; i > -1; i--) {
+        		listModel.removeElementAt(arr[i]);
+        	}
+        });
+		listPanel.add(new JScrollPane(list), BorderLayout.CENTER);
+		p.add(listPanel);
         
         
         return p;
 	}
 
 	public void updateBackupList() {
-		backupList.setText(Main.DESTINATION_PREFIX + Main.getBackupDir().getAbsolutePath() + "\n\n");
-		backupDestLabel.setText("Backup destination : " + Main.getBackupDir().getAbsolutePath());
-		list.forEach(f -> backupList.append(f.getAbsolutePath() + "\n"));
+		backupDestLabel.setText(Main.DESTINATION_PREFIX + Main.getBackupDir().getAbsolutePath());
+		listModel.clear();
+		list.stream().map(File::getAbsolutePath).forEach(listModel::addElement);
 		
 		cb_model.removeAllElements();
 	    Main.getBackupDateString().forEach(cb_model::addElement);
 	    
-	    backupListVector.clear();
-	    list.stream().map(File::getAbsolutePath).forEach(backupListVector::add);
-	        
 		backupStatusTreeRoot = new DefaultMutableTreeNode("(root)");
 		backupStatusTreeModel = new DefaultTreeModel(backupStatusTreeRoot);
 		backupStatusTree.setModel(backupStatusTreeModel);

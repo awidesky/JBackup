@@ -29,7 +29,7 @@ import javax.swing.SwingUtilities;
 
 public class Main {
 
-	public static final String DESTINATION_PREFIX = "Saved at : ";
+	public static final String DESTINATION_PREFIX = "Backup destination : ";
 	public static final String MAXSNAPSHOTS_PREFIX = "Max Snapshots : ";
 	private static File listFile = new File("./backupList.txt");
 	private static File backupDir = new File("./Mybackup");
