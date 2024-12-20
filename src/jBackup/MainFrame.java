@@ -54,7 +54,7 @@ public class MainFrame extends JFrame {
 	private JLabel backupDestLabel = new JLabel("Backup destination : " + Main.getBackupDir().getAbsolutePath());
 	private JTextField snapshot = new JTextField(5);
 	private JComboBox<String> cb_snapshotSelect = new JComboBox<String>();
-	private DefaultComboBoxModel<String> cb_model = (DefaultComboBoxModel<String>)cb_snapshotSelect.getModel();
+	private DefaultComboBoxModel<String> cb_snapshotModel = (DefaultComboBoxModel<String>)cb_snapshotSelect.getModel();
 	private DefaultListModel<String> listModel = new DefaultListModel<>();
 	
 	public MainFrame() {
@@ -100,7 +100,7 @@ public class MainFrame extends JFrame {
 		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
 
         JPanel backupDest = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton browse = new JButton("Browse");
+        JButton browse = new JButton("Browse..");
         browse.addActionListener(e -> setBackupDir());
         backupDest.add(backupDestLabel);
         backupDest.add(browse);
@@ -109,23 +109,29 @@ public class MainFrame extends JFrame {
         JPanel snapshots = new JPanel(new FlowLayout(FlowLayout.LEFT));
         snapshots.add(new JLabel("Maximum number of snapshots : "));
         snapshot.setText("" + Main.getMaxSnapshots());
+        snapshot.setToolTipText("Press enter to apply!");
+        snapshot.addActionListener(e ->{
+        	try {
+				Main.setMaxSnapshots(Integer.parseInt(snapshot.getText()));
+			} catch (NumberFormatException e1) {}
+        	updateBackupList();
+        });
         snapshots.add(snapshot);
         p.add(snapshots);
 		
         JPanel snapshotSelect = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton remove_snapshot = new JButton("remove");
         remove_snapshot.addActionListener(e -> {
-        	String selected = (String)cb_model.getSelectedItem();
+        	String selected = (String)cb_snapshotModel.getSelectedItem();
         	File dir = new File(Main.getBackupDir(), selected);
         	if(JOptionPane.showConfirmDialog(null, "Remove backup snapshot %s?\nLocation : %s".formatted(selected, dir.getAbsolutePath()),
         			"Remove snapshot?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) return;
         	
         	try {
 				Main.removeDir(dir);
-				cb_model.removeElement(selected);
+				cb_snapshotModel.removeElement(selected);
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				error(e1, "Failed to remove snapshot : " + selected, "%e%");
 			}
         });
         snapshotSelect.add(new JLabel("Choose snapshot : "));
@@ -142,15 +148,16 @@ public class MainFrame extends JFrame {
         p.add(labelPanel);
         
         JPanel listPanel = new JPanel(new BorderLayout());
-        JList<String> list = new JList<>(listModel);
-        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        JList<String> jlist = new JList<>(listModel);
+        jlist.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         remove_list.addActionListener(e ->{
-        	int[] arr = list.getSelectedIndices();
+        	int[] arr = jlist.getSelectedIndices();
         	for(int i = arr.length - 1; i > -1; i--) {
         		listModel.removeElementAt(arr[i]);
+        		list.removeIndex(arr[i]);
         	}
         });
-		listPanel.add(new JScrollPane(list), BorderLayout.CENTER);
+		listPanel.add(new JScrollPane(jlist), BorderLayout.CENTER);
 		p.add(listPanel);
         
         
@@ -162,8 +169,10 @@ public class MainFrame extends JFrame {
 		listModel.clear();
 		list.stream().map(File::getAbsolutePath).forEach(listModel::addElement);
 		
-		cb_model.removeAllElements();
-	    Main.getBackupDateString().forEach(cb_model::addElement);
+		cb_snapshotModel.removeAllElements();
+	    Main.getBackupDateString().sorted((s1, s2) -> s2.compareTo(s1)).forEach(cb_snapshotModel::addElement);
+	    
+	    snapshot.setText("" + Main.getMaxSnapshots());
 	    
 		backupStatusTreeRoot = new DefaultMutableTreeNode("(root)");
 		backupStatusTreeModel = new DefaultTreeModel(backupStatusTreeRoot);
@@ -188,12 +197,6 @@ public class MainFrame extends JFrame {
         	while(!s.isEmpty()) n = addNode(s.pop(), n);
         	
         	DefaultMutableTreeNode childNode = addNode(f, n);
-        	//int row = backupStatusTree.getRowForPath(new TreePath(childNode.getPath()));
-        	//for(TreeNode t : childNode.getPath()) System.out.print(t.toString());
-        	//System.out.println();
-        	//System.out.println(row);
-        	//for(int i = 0; i < row; i++) backupStatusTree.expandRow(i);
-        	//backupStatusTree.expandPath(new TreePath((childNode.isLeaf() ? (DefaultMutableTreeNode)childNode.getParent() : childNode).getPath()));
         	
             if (f.isDirectory()) {
             	addChild(f, childNode);

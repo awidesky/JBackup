@@ -53,6 +53,9 @@ public class Main {
 	public static int getMaxSnapshots() {
 		return maxSnapshots;
 	}
+	public static void setMaxSnapshots(int max) {
+		maxSnapshots = max;
+	}
 	public static File getBackupDir() {
 		return backupDir;
 	}
@@ -96,7 +99,7 @@ public class Main {
 				"Start backup?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) return;
 		
 		String timeStamp = dateFormat.format(new Date());
-		File destFolderFile = new File(backupDir, timeStamp );
+		File destFolderFile = new File(backupDir, timeStamp);
 		destFolderFile.mkdirs();
 		
 		String backupDirStr = destFolderFile.getAbsolutePath();
@@ -106,8 +109,7 @@ public class Main {
 			try(PrintWriter pw = new PrintWriter(new FileWriter(new File(backupDirStr, (i+1) + ".backupDestination.txt")))){
 				pw.println(in.getCanonicalPath());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MainFrame.error(e, "Failed to read " + (i+1) + ".backupDestination.txt", "%e%");
 			}
 			
 			pairList.add(new PathPair(in.toPath(), Paths.get(backupDirStr, Integer.toString(i+1), in.getName())));
@@ -123,21 +125,21 @@ public class Main {
 					Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MainFrame.error(e, "Failed to copy %s to %s".formatted(source, target), "%e%");
 			}
 		});
-		JOptionPane.showMessageDialog(null, "Backup done!\nTimestamp : " + timeStamp, "Backup finished!", JOptionPane.INFORMATION_MESSAGE);
 		Worker.work(() -> {
 			while(Arrays.stream(backupDir.listFiles()).filter(File::isDirectory).count() > maxSnapshots) {
 				try {
 					removeDir(new File(backupDir, getOldestBackupDate()));
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					MainFrame.error(e, "Failed to remove directory " + getOldestBackupDate(), "%e%");
 					e.printStackTrace();
 				}
 			}
+			list.runCallback();
 		});
+		JOptionPane.showMessageDialog(null, "Backup done!\nTimestamp : " + timeStamp, "Backup finished!", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	public static void removeDir(File dir) throws IOException {
@@ -267,8 +269,7 @@ private static class PathPair {
 			try(BufferedReader bw = new BufferedReader(new FileReader(info))){
 				dst = new File(bw.readLine());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MainFrame.error(e, "Failed to read " + info.getAbsolutePath(), "%e%");
 				return;
 			}
 			
@@ -282,8 +283,7 @@ private static class PathPair {
 					Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MainFrame.error(e, "Failed to restore %s to %s".formatted(source, target), "%e%");
 			}
 		}
 	}
@@ -305,8 +305,7 @@ private static class PathPair {
 					try {
 						return dateFormat.parse(s);
 					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						e.printStackTrace(); //Shouldn't happen, cause it's filtered in getBackupDateString()
 						return null;
 					}
 				})

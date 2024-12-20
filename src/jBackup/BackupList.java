@@ -7,6 +7,8 @@ import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import javax.swing.SwingUtilities;
+
 public class BackupList {
 
 	private TreeSet<File> list = new TreeSet<>();
@@ -59,5 +61,15 @@ public class BackupList {
 	
 	public void clear() {
 		list.clear();
+		callback.run();
+	}
+
+	public void removeIndex(int i) {
+		list.remove(get(i));
+		callback.run();
+	}
+
+	public void runCallback() {
+		SwingUtilities.invokeLater(callback);
 	}
 }
