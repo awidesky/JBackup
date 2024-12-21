@@ -99,7 +99,7 @@ public class Main {
 				"Start backup?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) return;
 		
 		String timeStamp = dateFormat.format(new Date());
-		File destFolderFile = new File(backupDir, timeStamp);
+		File destFolderFile = new File(backupDir, timeStamp );
 		destFolderFile.mkdirs();
 		
 		String backupDirStr = destFolderFile.getAbsolutePath();
@@ -109,7 +109,8 @@ public class Main {
 			try(PrintWriter pw = new PrintWriter(new FileWriter(new File(backupDirStr, (i+1) + ".backupDestination.txt")))){
 				pw.println(in.getCanonicalPath());
 			} catch (IOException e) {
-				MainFrame.error(e, "Failed to read " + (i+1) + ".backupDestination.txt", "%e%");
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			
 			pairList.add(new PathPair(in.toPath(), Paths.get(backupDirStr, Integer.toString(i+1), in.getName())));
@@ -125,7 +126,8 @@ public class Main {
 					Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 				}
 			} catch (IOException e) {
-				MainFrame.error(e, "Failed to copy %s to %s".formatted(source, target), "%e%");
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		});
 		Worker.work(() -> {
@@ -133,7 +135,7 @@ public class Main {
 				try {
 					removeDir(new File(backupDir, getOldestBackupDate()));
 				} catch (IOException e) {
-					MainFrame.error(e, "Failed to remove directory " + getOldestBackupDate(), "%e%");
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -209,7 +211,11 @@ private static class PathPair {
 		.sum();
 	}
 
-
+	/**
+	 * Numbers of files in list(recursively)
+	 * @param list
+	 * @return
+	 */
 	private static long getFileNum(BackupList list) {
 		return list.stream().mapToLong(f -> {
 			try {
@@ -269,7 +275,8 @@ private static class PathPair {
 			try(BufferedReader bw = new BufferedReader(new FileReader(info))){
 				dst = new File(bw.readLine());
 			} catch (IOException e) {
-				MainFrame.error(e, "Failed to read " + info.getAbsolutePath(), "%e%");
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 				return;
 			}
 			
@@ -283,7 +290,8 @@ private static class PathPair {
 					Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 				}
 			} catch (IOException e) {
-				MainFrame.error(e, "Failed to restore %s to %s".formatted(source, target), "%e%");
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -305,7 +313,8 @@ private static class PathPair {
 					try {
 						return dateFormat.parse(s);
 					} catch (ParseException e) {
-						e.printStackTrace(); //Shouldn't happen, cause it's filtered in getBackupDateString()
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 						return null;
 					}
 				})

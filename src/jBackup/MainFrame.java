@@ -100,7 +100,7 @@ public class MainFrame extends JFrame {
 		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
 
         JPanel backupDest = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton browse = new JButton("Browse..");
+        JButton browse = new JButton("Browse");
         browse.addActionListener(e -> setBackupDir());
         backupDest.add(backupDestLabel);
         backupDest.add(browse);
@@ -131,7 +131,8 @@ public class MainFrame extends JFrame {
 				Main.removeDir(dir);
 				cb_snapshotModel.removeElement(selected);
 			} catch (IOException e1) {
-				error(e1, "Failed to remove snapshot : " + selected, "%e%");
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
         });
         snapshotSelect.add(new JLabel("Choose snapshot : "));
@@ -197,6 +198,12 @@ public class MainFrame extends JFrame {
         	while(!s.isEmpty()) n = addNode(s.pop(), n);
         	
         	DefaultMutableTreeNode childNode = addNode(f, n);
+        	//int row = backupStatusTree.getRowForPath(new TreePath(childNode.getPath()));
+        	//for(TreeNode t : childNode.getPath()) System.out.print(t.toString());
+        	//System.out.println();
+        	//System.out.println(row);
+        	//for(int i = 0; i < row; i++) backupStatusTree.expandRow(i);
+        	//backupStatusTree.expandPath(new TreePath((childNode.isLeaf() ? (DefaultMutableTreeNode)childNode.getParent() : childNode).getPath()));
         	
             if (f.isDirectory()) {
             	addChild(f, childNode);
