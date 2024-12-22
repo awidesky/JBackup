@@ -27,6 +27,8 @@ import java.util.stream.Stream;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import gui.MainFrame;
+
 public class Main {
 
 	public static final String DESTINATION_PREFIX = "Backup destination : ";

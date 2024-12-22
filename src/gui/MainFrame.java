@@ -1,4 +1,4 @@
-package jBackup;
+package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
@@ -37,8 +37,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
-import jBackup.panels.FileChooserPanel;
-import jBackup.panels.FileNode;
+import jBackup.BackupList;
+import jBackup.Main;
 
 public class MainFrame extends JFrame {
 	

@@ -1,4 +1,4 @@
-package jBackup.panels;
+package gui;
 
 import java.awt.BorderLayout;
 import java.io.File;
