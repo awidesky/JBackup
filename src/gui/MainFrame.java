@@ -230,12 +230,6 @@ public class MainFrame extends JFrame {
         	while(!s.isEmpty()) n = addNode(s.pop(), n);
         	
         	DefaultMutableTreeNode childNode = addNode(f, n);
-        	//int row = backupStatusTree.getRowForPath(new TreePath(childNode.getPath()));
-        	//for(TreeNode t : childNode.getPath()) System.out.print(t.toString());
-        	//System.out.println();
-        	//System.out.println(row);
-        	//for(int i = 0; i < row; i++) backupStatusTree.expandRow(i);
-        	//backupStatusTree.expandPath(new TreePath((childNode.isLeaf() ? (DefaultMutableTreeNode)childNode.getParent() : childNode).getPath()));
         	
             if (f.isDirectory()) {
             	addChild(f, childNode);
