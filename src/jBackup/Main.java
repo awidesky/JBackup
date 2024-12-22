@@ -296,6 +296,7 @@ private static class PathPair {
 				e.printStackTrace();
 			}
 		}
+		JOptionPane.showMessageDialog(null, "Restore done!", "Restore finished!", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 

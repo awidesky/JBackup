@@ -3,7 +3,10 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -61,10 +64,21 @@ public class MainFrame extends JFrame {
         setLocationByPlatform(true);
         setSize(600, 600);
         setLayout(new BorderLayout());
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				if(getTitle().endsWith("*")) {
+					if(JOptionPane.showConfirmDialog(null, "There are changed configuration(s) in %s\nExit anyway?".formatted(Main.getListFile().getName()),
+							 "Backup configuration not saved!", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION)
+						return;
+				}
+				e.getWindow().dispose();
+				System.exit(0);
+			}
+		});
         
         Main.load(list, Main.getListFile());
-        setTitle("Backup : " + Main.getListFile().getName());
         
 		backupStatusTree.setShowsRootHandles(false);
 		updateBackupList();
@@ -96,9 +110,10 @@ public class MainFrame extends JFrame {
         addMenuBar();
         
         //pack();
+        resetTitle();
         setVisible(true);
 	}
-	
+
 	private JPanel getSummaryPanel() {
 		JPanel p = new JPanel();
 		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
@@ -113,12 +128,17 @@ public class MainFrame extends JFrame {
         JPanel snapshots = new JPanel(new FlowLayout(FlowLayout.LEFT));
         snapshots.add(new JLabel("Maximum number of snapshots : "));
         snapshot.setText("" + Main.getMaxSnapshots());
-        snapshot.setToolTipText("Press enter to apply!");
-        snapshot.addActionListener(e ->{
-        	try {
-				Main.setMaxSnapshots(Integer.parseInt(snapshot.getText()));
-			} catch (NumberFormatException e1) {}
-        	updateBackupList();
+        //snapshot.setToolTipText("Press enter to apply!");
+        snapshot.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+            	try {
+    				Main.setMaxSnapshots(Integer.parseInt(snapshot.getText()));
+    				updateBackupList();
+    			} catch (NumberFormatException e1) {
+    				snapshot.setText("" + Main.getMaxSnapshots()); //restore original value if input is not a number
+    			}
+            }
         });
         snapshots.add(snapshot);
         p.add(snapshots);
@@ -189,6 +209,8 @@ public class MainFrame extends JFrame {
         for (int i = 0; i < backupStatusTree.getRowCount(); i++) {
         	backupStatusTree.expandRow(i);
         }
+        resetTitle();
+        setTitle(getTitle() + "*");
 	}
 	
 	private void addChild(File file, DefaultMutableTreeNode parent) {
@@ -246,6 +268,7 @@ public class MainFrame extends JFrame {
 		JMenuItem mi_save = new JMenuItem("Save", KeyEvent.VK_S);
 		mi_save.addActionListener(e -> {
 			Main.save(list);
+			resetTitle();
 		});
 		JMenuItem mi_saveAs = new JMenuItem("Save as...", KeyEvent.VK_A);
 		mi_saveAs.addActionListener(e -> {
@@ -264,6 +287,7 @@ public class MainFrame extends JFrame {
 						JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 			}
 			Main.save(list, file);
+			resetTitle();
 		});
 		JMenuItem mi_load = new JMenuItem("Load", KeyEvent.VK_L);
 		mi_load.addActionListener(e -> {
@@ -273,7 +297,7 @@ public class MainFrame extends JFrame {
 				return;
 			File file = jfc.getSelectedFile();
 			Main.load(list, file);
-			setTitle("Backup : " + file.getName());
+			resetTitle();
 		});
 		JMenuItem mi_open = new JMenuItem("Open list file", KeyEvent.VK_O);
 		mi_open.addActionListener(e -> {
@@ -312,7 +336,14 @@ public class MainFrame extends JFrame {
 		setJMenuBar(menuBar);
 	}
 	
-	
+	private void resetTitle() {
+		String path = Main.getListFile().getName();
+		try {
+			path = Main.getListFile().getCanonicalPath();
+		} catch (IOException e) {}
+		setTitle("Backup : " + path);		
+	}
+
 	private void setBackupDir() {
 		JFileChooser jfc = new JFileChooser();
 		jfc.setDialogTitle("Change backup directory");
