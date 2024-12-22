@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.io.File;
 
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -40,6 +41,7 @@ public class FileChooserPanel extends JPanel {
         	tree.show(jfc.getSelectedFile());
         });
         controls.add(chroot, gbc);
+        controls.add(Box.createVerticalStrut(10), gbc);
         chooseFolder.addActionListener(e -> {
         	JFileChooser jfc = new JFileChooser(list.size() != 0 ? list.get(list.size() - 1) : new File(System.getProperty("user.dir")));
         	jfc.setDialogTitle("Select files of folders to be included in backup list");
