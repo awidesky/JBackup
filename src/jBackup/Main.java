@@ -38,6 +38,8 @@ public class Main {
 	private static int maxSnapshots = 5;
 	private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd\'T\'HH_mm_ss");
 	
+	private static MainFrame mf;
+	
 	public static void main(String[] args) throws IOException {
 		if(!listFile.exists()) listFile.createNewFile();
 		if(!backupDir.exists()) backupDir.mkdirs();
@@ -45,7 +47,7 @@ public class Main {
 		/* If not using this, AbsolutePath might be like "/Users/eugenehong/git/JBackup/./Mybackup" */
 		backupDir = backupDir.getCanonicalFile();
 		
-		SwingUtilities.invokeLater(MainFrame::new);
+		SwingUtilities.invokeLater(() -> mf = new MainFrame());
 	}
 	
 
@@ -160,7 +162,7 @@ public class Main {
 	        }
 	    });
 	}
-private static class PathPair {
+	private static class PathPair {
 		Path source;
 		Path target;
 		public PathPair(Path source, Path target) {
@@ -170,23 +172,23 @@ private static class PathPair {
 	}
 
 	private static void copyFolder(Path source, Path target) throws IOException {
-        Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
+		Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
 
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                    throws IOException {
-                Files.createDirectories(target.resolve(source.relativize(dir).toString()));
-                return FileVisitResult.CONTINUE;
-            }
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+					throws IOException {
+				Files.createDirectories(target.resolve(source.relativize(dir).toString()));
+				return FileVisitResult.CONTINUE;
+			}
 
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
-                Files.copy(file, target.resolve(source.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
-                return FileVisitResult.CONTINUE;
-            }
-        });
-    }
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+					throws IOException {
+				Files.copy(file, target.resolve(source.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
+				return FileVisitResult.CONTINUE;
+			}
+		});
+	}
 	
 	private static long getBackupSize(BackupList list) {
 		return list.stream().mapToLong(f -> {
@@ -297,6 +299,9 @@ private static class PathPair {
 
 
 	private static String getLatestBackupDate() {
+		String ret = mf.getRestoreSnapshot();
+		if(ret != null) return ret;
+		
 		Date date = getBackupDates().max(Comparator.comparing(Date::toString)).orElse(null);
 		if(date == null) return null;
 		else return dateFormat.format(date);

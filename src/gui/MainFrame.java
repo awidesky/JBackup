@@ -3,6 +3,7 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -34,6 +35,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -133,7 +135,10 @@ public class MainFrame extends JFrame {
             @Override
             public void keyReleased(KeyEvent e) {
             	try {
-    				Main.setMaxSnapshots(Integer.parseInt(snapshot.getText()));
+    				int newInt = Integer.parseInt(snapshot.getText());
+    				if(newInt == Main.getMaxSnapshots()) return;
+    				
+					Main.setMaxSnapshots(newInt);
     				updateBackupList();
     			} catch (NumberFormatException e1) {
     				snapshot.setText("" + Main.getMaxSnapshots()); //restore original value if input is not a number
@@ -265,6 +270,7 @@ public class MainFrame extends JFrame {
 		menuBar.add(m_backupList);
 		 
 		JMenuItem mi_save = new JMenuItem("Save", KeyEvent.VK_S);
+		mi_save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
 		mi_save.addActionListener(e -> {
 			Main.save(list);
 			resetTitle();
@@ -335,6 +341,11 @@ public class MainFrame extends JFrame {
 		setJMenuBar(menuBar);
 	}
 	
+
+	public String getRestoreSnapshot() {
+		return (String)cb_snapshotModel.getSelectedItem();
+	}
+	
 	private void resetTitle() {
 		String path = Main.getListFile().getName();
 		try {
@@ -368,4 +379,5 @@ public class MainFrame extends JFrame {
 			JOptionPane.showMessageDialog(null, title, content, JOptionPane.ERROR_MESSAGE);
 		});
 	}
+
 }
