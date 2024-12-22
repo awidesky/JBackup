@@ -47,7 +47,7 @@ import jBackup.Main;
 
 public class MainFrame extends JFrame {
 	
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 5133806850983761530L;
 	
 	private BackupList list = new BackupList(this::updateBackupList);
 	private DefaultMutableTreeNode backupStatusTreeRoot;
@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
 		updateBackupList();
         
         JTabbedPane tab = new JTabbedPane();
-        tab.add(getSummaryPanel(), "Backuped configuration");
+        tab.add(getSummaryPanel(), "Backup configuration");
         tab.add(new FileChooserPanel(list), "Choose what to backup");
         tab.add(new JScrollPane(backupStatusTree), "Backuped files(Tree view)");
         add(tab, BorderLayout.CENTER);

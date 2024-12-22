@@ -14,7 +14,7 @@ import jBackup.BackupList;
 
 public class FileChooserPanel extends JPanel {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -1057712028307032376L;
 	private DirTree tree = new DirTree();
 	private JButton chroot = new JButton("change tree root");
 	private JButton chooseFolder = new JButton("choose file manually");

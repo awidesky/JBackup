@@ -9,10 +9,6 @@ public class FileNode {
     @Override
     public String toString() {
         String name = file.getName();
-        if (name.equals("")) { //in case of "/", etc..
-            return file.getAbsolutePath();
-        } else {
-            return name;
-        }
+        return name.equals("") ? file.getAbsolutePath() : name; //in case of "/", etc..
     }
 }
