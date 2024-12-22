@@ -157,8 +157,7 @@ public class MainFrame extends JFrame {
 				Main.removeDir(dir);
 				cb_snapshotModel.removeElement(selected);
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				error(e1, "Failed to remove snapshot : " + selected, "%e%");
 			}
         });
         snapshotSelect.add(new JLabel("Choose snapshot : "));

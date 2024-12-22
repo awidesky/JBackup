@@ -111,8 +111,8 @@ public class Main {
 			try(PrintWriter pw = new PrintWriter(new FileWriter(new File(backupDirStr, (i+1) + ".backupDestination.txt")))){
 				pw.println(in.getCanonicalPath());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MainFrame.error(e, "Failed to write : " + (i+1) + ".backupDestination.txt", "%e%");
+				return;
 			}
 			
 			pairList.add(new PathPair(in.toPath(), Paths.get(backupDirStr, Integer.toString(i+1), in.getName())));
@@ -128,8 +128,8 @@ public class Main {
 					Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MainFrame.error(e, "Failed to copy %s to %s".formatted(source.toAbsolutePath(), target.toAbsolutePath()), "%e%");
+				return;
 			}
 		});
 		Worker.work(() -> {
@@ -137,8 +137,7 @@ public class Main {
 				try {
 					removeDir(new File(backupDir, getOldestBackupDate()));
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					MainFrame.error(e, "Failed to remove oldest backup!", "%e%");
 				}
 			}
 			list.runCallback();
@@ -199,7 +198,6 @@ private static class PathPair {
 							try {
 								return Files.size(p);
 							} catch (IOException e) {
-								e.printStackTrace();
 								MainFrame.error(e, "Failed finding size of : " + p.toAbsolutePath().toString(), "%e%");
 								return 0;
 							}
@@ -277,8 +275,7 @@ private static class PathPair {
 			try(BufferedReader bw = new BufferedReader(new FileReader(info))){
 				dst = new File(bw.readLine());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MainFrame.error(e, "Failed to write to " + i + ".backupDestination.txt", "%e%");
 				return;
 			}
 			
@@ -292,8 +289,7 @@ private static class PathPair {
 					Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				MainFrame.error(e, "Failed to copy %s to %s".formatted(source.toAbsolutePath(), target.toAbsolutePath()), "%e%");
 			}
 		}
 		JOptionPane.showMessageDialog(null, "Restore done!", "Restore finished!", JOptionPane.INFORMATION_MESSAGE);
@@ -316,9 +312,7 @@ private static class PathPair {
 					try {
 						return dateFormat.parse(s);
 					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return null;
+						return null; //not going to happen, because of getBackupDateString()
 					}
 				})
 				.filter(Objects::nonNull);
