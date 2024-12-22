@@ -31,9 +31,7 @@ public class BackupList {
 	}
 	
 	public void addAll(List<File> selected) {
-		list.addAll(selected);
-		scanList();
-		callback.run();
+		selected.forEach(this::add);
 	}
 
 	private void scanList() {
