@@ -79,6 +79,10 @@ public class MainFrame extends JFrame {
         JButton startBackup = new JButton("Start backup");
         JButton restoreBackup = new JButton("Restore backup");
         startBackup.addActionListener(e -> {
+        	if(list.isEmpty()) {
+        		error(null, "Nothing to backup!", "The backup list is empty!");
+        		return;
+        	}
         	Main.backup(list);
         });
         restoreBackup.addActionListener(e -> {
@@ -123,6 +127,8 @@ public class MainFrame extends JFrame {
         JButton remove_snapshot = new JButton("remove");
         remove_snapshot.addActionListener(e -> {
         	String selected = (String)cb_snapshotModel.getSelectedItem();
+        	if(selected == null) return;
+        	
         	File dir = new File(Main.getBackupDir(), selected);
         	if(JOptionPane.showConfirmDialog(null, "Remove backup snapshot %s?\nLocation : %s".formatted(selected, dir.getAbsolutePath()),
         			"Remove snapshot?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) return;
@@ -319,11 +325,17 @@ public class MainFrame extends JFrame {
 	}
 
 	public static void error(Exception e, String title, String content) {
-		e.printStackTrace();
-		StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
+		if(e != null) {
+			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			content = content.replace("%e%", sw.toString());
+		}
+		err(title, content);
+	}
+	private static void err(String title, String content) {
 		SwingUtilities.invokeLater(() -> {
-			JOptionPane.showMessageDialog(null, title, content.replace("%e%", sw.toString()), JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, title, content, JOptionPane.ERROR_MESSAGE);
 		});
 	}
 }

@@ -36,7 +36,7 @@ public class DirTree extends JPanel {
 	    treeModel = new DefaultTreeModel(rootNode);
 	    tree.setModel(treeModel);
 
-        addChild(root, rootNode);
+	    addChild(root, rootNode);
 	}
 	
     private void addChild(File file, DefaultMutableTreeNode parent) {
@@ -44,11 +44,13 @@ public class DirTree extends JPanel {
         if (files == null) return;
 
         for (File f : files) {
-            DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new FileNode(f));
-            parent.add(childNode);
-            if (f.isDirectory()) {
-            	SwingUtilities.invokeLater(() -> addChild(f, childNode));
-            }
+        	SwingUtilities.invokeLater(() -> {
+        		DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new FileNode(f));
+        		parent.add(childNode);
+				if (f.isDirectory()) {
+					SwingUtilities.invokeLater(() -> addChild(f, childNode));
+	            }
+        	});
         }
     }
     

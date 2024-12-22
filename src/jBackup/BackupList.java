@@ -1,6 +1,7 @@
 package jBackup;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -19,7 +20,12 @@ public class BackupList {
 	}
 
 	public void add(File f) {
-		list.add(f);
+		try {
+			list.add(new File(f.getCanonicalPath()));
+		} catch (IOException e) {
+			list.add(new File(f.getAbsolutePath()));
+			e.printStackTrace();
+		}
 		scanList();
 		callback.run();
 	}
@@ -45,6 +51,9 @@ public class BackupList {
 
 	public int size() {
 		return list.size();
+	}
+	public boolean isEmpty() {
+		return list.isEmpty();
 	}
 
 	public File get(int i) {
