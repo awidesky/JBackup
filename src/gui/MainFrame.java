@@ -134,6 +134,8 @@ public class MainFrame extends JFrame {
         snapshot.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
+            	if("".equals(snapshot.getText())) return;
+            	
             	try {
     				int newInt = Integer.parseInt(snapshot.getText());
     				if(newInt == Main.getMaxSnapshots()) return;
